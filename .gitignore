@@ -1,0 +1,4 @@
+_pycache_
+.JerseyShop_env
+.env
+db.sqlite3

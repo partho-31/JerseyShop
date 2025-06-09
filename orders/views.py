@@ -1,0 +1,103 @@
+from django.shortcuts import render
+from rest_framework.mixins import CreateModelMixin,DestroyModelMixin,RetrieveModelMixin,UpdateModelMixin
+from rest_framework.viewsets import GenericViewSet
+from rest_framework.viewsets import ModelViewSet
+from orders.serializers import CartSerializers,CartItemSerializers,addCartItemSerializers,CreateOrderSerializers,OrderSerializers,UpdateOrderSerializers,OrderItemSerializers
+from orders.models import Cart,CartItem,Order,OrderItem
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import IsAuthenticated
+
+
+class CartViewSet(CreateModelMixin,
+                  RetrieveModelMixin,
+                  UpdateModelMixin,
+                  DestroyModelMixin,
+                  GenericViewSet):
+    serializer_class = CartSerializers
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        if self.request.user.is_authenticated:
+            return Cart.objects.filter(user = self.request.user)
+        else:
+            return Cart.objects.none()
+    
+    def perform_create(self, serializer):
+        serializer.save(user = self.request.user)
+
+
+
+class CartItemViewSet(ModelViewSet):
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return addCartItemSerializers
+        return CartItemSerializers
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user.is_authenticated:
+            return Cart.objects.none()
+        
+        cart, created = Cart.objects.get_or_create(user=user)
+        return CartItem.objects.filter(cart=cart)
+ 
+    def perform_create(self, serializer):
+        cart, created = Cart.objects.get_or_create(user=self.request.user)
+        serializer.context['cart'] = cart
+        serializer.save()
+
+
+
+class OrderViewSet(ModelViewSet):
+    queryset = Order.objects.select_related('user').all()
+    permission_classes = [IsAuthenticated]
+    
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return CreateOrderSerializers
+        elif self.request.method in ['PUT', 'PATCH']:
+            return UpdateOrderSerializers
+        return OrderSerializers
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        serializer.save(user=user)
+
+    @action(detail=True, methods=['post'])
+    def cancel(self, request, pk=None):
+        order = self.get_object()
+        user = self.request.user
+
+        if order.status == Order.DELIVERED:
+            raise ValidationError({"detail": "You cannot cancel a delivered order."})
+
+        if user.is_staff or order.user == user:
+            order.status = Order.CANCELED
+            order.save()
+            serializer = self.get_serializer(order)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response(
+            {"detail": "You do not have permission to cancel this order."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    @action(detail=True, methods=['patch'])
+    def update_status(self,request,pk=None):
+        order = self.get_object()
+        serializer = UpdateOrderSerializers(order,data= request.data,partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+class OrderItemViewSet(ModelViewSet):
+    serializer_class = OrderItemSerializers
+    
+    def get_queryset(self):
+        orderId = self.kwargs.get('order_pk')
+        return OrderItem.objects.filter(order_id=orderId)
