@@ -161,6 +161,9 @@ CORS_ALLOWED_ORIGINS = [
     
 ]
 
+ALLOWED_HOSTS = ['.vercel.app',]
+WSGI_APPLICATION = 'JerseyShop.wsgi.app'
+
 DJOSER = {
     'PASSWORD_RESET_CONFIRM_URL': '/password/reset/confirm/{uid}/{token}',
     'USERNAME_RESET_CONFIRM_URL': '/username/reset/confirm/{uid}/{token}',
