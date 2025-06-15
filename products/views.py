@@ -35,8 +35,15 @@ class ProductImageViewSet(ModelViewSet):
 
 class ProductReviewViewSet(ModelViewSet):
     serializer_class = ProductReviewSerializers
-    queryset = ProductReview.objects.select_related('user').all()
     permission_classes = [IsReviewAuthorOrReadOnly]
+
+    def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return ProductReview.objects.none()
+        
+        product_id = self.kwargs.get('product_pk')
+        product = Product.objects.get(id=product_id)
+        return ProductReview.objects.filter(product=product).select_related('user').all()
 
     def perform_create(self, serializer):
         user = self.request.user
