@@ -41,6 +41,8 @@ class ProductReview(models.Model):
     rating = models.PositiveIntegerField(validators=[MinValueValidator(0),MaxValueValidator(5)])
     comment = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+    image = CloudinaryField('image')
+
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='reviews')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')

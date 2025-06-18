@@ -2,7 +2,7 @@ from django.urls import path,include
 from rest_framework_nested import routers
 
 from products.views import ProductViewSet,CategoryViewSet,ProductImageViewSet,ProductReviewViewSet,LatestProduct
-from orders.views import CartViewSet,CartItemViewSet,OrderViewSet,OrderItemViewSet
+from orders.views import CartViewSet,CartItemViewSet,OrderViewSet,OrderItemViewSet,OrderOverview
 
 
 router = routers.SimpleRouter()
@@ -30,4 +30,5 @@ urlpatterns = [
     path('',include(cartItem_router.urls)),
     path('',include(orderItem_router.urls)),
     path('latest/products/',LatestProduct, name='latestProduct'),
+    path('orders/overview/',OrderOverview, name='orderOverview'),
 ]

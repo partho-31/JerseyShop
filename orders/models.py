@@ -30,14 +30,14 @@ class CartItem(models.Model):
     
 
 class Order(models.Model):
+    PAID = 'Paid'
     NOT_PAID = 'Not Paid'
-    READY_TO_SHIP = 'Ready To Ship'
     SHIPPED = 'Shipped'
     DELIVERED = 'Delivered'
     CANCELED = 'Canceled'
     STATUS_CHOICES = [
+        (PAID, 'Paid'),
         (NOT_PAID, 'Not Paid'),
-        (READY_TO_SHIP, 'Ready To Ship'),
         (SHIPPED, 'Shipped'),
         (DELIVERED, 'Delivered'),
         (CANCELED, 'Canceled')

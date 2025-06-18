@@ -5,6 +5,7 @@ from django.db.models import Avg
 from decimal import Decimal
 
 
+
 class CategorySerializers(serializers.ModelSerializer):
     total_product = serializers.SerializerMethodField('get_total_product')
     class Meta:
@@ -24,15 +25,31 @@ class ImageSerializers(serializers.ModelSerializer):
         read_only_fields = ['id']
 
 
+class ProductReviewSerializers(serializers.ModelSerializer):
+    user = CustomUserSerializers(read_only=True)
+    image = serializers.ImageField()
+    class Meta:
+        model = ProductReview
+        fields = ['id','rating','comment','user','image']
+        read_only_fields = ['id','user']
+
+    def create(self, validated_data):
+        id = self.context.get('product_id')
+        product = Product.objects.get(id=id)
+        return ProductReview.objects.create(product=product,**validated_data)
+
+
 class ProductSerializers(serializers.ModelSerializer):
     images = ImageSerializers(many=True, read_only=True)
     final_price = serializers.SerializerMethodField('get_final_price')
     ratings = serializers.SerializerMethodField('get_ratings')
+    category = CategorySerializers()
+    reviews = ProductReviewSerializers(many=True, read_only=True)
 
     class Meta:
         model = Product
-        fields = ['id','name','price','discount','stock','category','description','images','final_price','ratings']
-        read_only_fields = ['id','final_price','ratings']
+        fields = ['id','name','price','discount','stock','category','description','images','final_price','ratings','reviews','created_at']
+        read_only_fields = ['id','final_price','ratings','reviews','created_at']
 
     def validate_price(self,price):
         if price <= 0:
@@ -56,16 +73,6 @@ class ProductImageSerializers(serializers.ModelSerializer):
 
 
 
-class ProductReviewSerializers(serializers.ModelSerializer):
-    user = CustomUserSerializers(read_only=True)
-    class Meta:
-        model = ProductReview
-        fields = ['id','rating','comment','user']
-        read_only_fields = ['id','user']
 
-    def create(self, validated_data):
-        id = self.context.get('product_id')
-        product = Product.objects.get(id=id)
-        return ProductReview.objects.create(product=product,**validated_data)
     
 

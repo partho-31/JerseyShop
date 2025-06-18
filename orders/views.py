@@ -4,11 +4,12 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework.viewsets import ModelViewSet
 from orders.serializers import CartSerializers,CartItemSerializers,addCartItemSerializers,CreateOrderSerializers,OrderSerializers,UpdateOrderSerializers,OrderItemSerializers
 from orders.models import Cart,CartItem,Order,OrderItem
-from rest_framework.decorators import action
+from rest_framework.decorators import action,api_view
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
+from django.db.models import Count,Q
 
 
 class CartViewSet(CreateModelMixin,
@@ -52,9 +53,13 @@ class CartItemViewSet(ModelViewSet):
 
 
 class OrderViewSet(ModelViewSet):
-    queryset = Order.objects.select_related('user').all()
     permission_classes = [IsAuthenticated]
     
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return  Order.objects.select_related('user').order_by('-created_at')    
+        return Order.objects.filter(user= self.request.user).order_by('-created_at')
+
     def get_serializer_class(self):
         if self.request.method == 'POST':
             return CreateOrderSerializers
@@ -101,3 +106,17 @@ class OrderItemViewSet(ModelViewSet):
     def get_queryset(self):
         orderId = self.kwargs.get('order_pk')
         return OrderItem.objects.filter(order_id=orderId)
+    
+
+@api_view(['GET'])
+def OrderOverview(request):
+    overview = Order.objects.aggregate(
+        total=Count('id'),
+        paid=Count('id', filter=Q(status=Order.PAID)),
+        not_paid=Count('id', filter=Q(status=Order.NOT_PAID)),
+        shipped=Count('id', filter=Q(status=Order.SHIPPED)),
+        delivered=Count('id', filter=Q(status=Order.DELIVERED)),
+        canceled=Count('id', filter=Q(status=Order.CANCELED)),
+    )
+    return Response({'order_overview' : overview})
+    
