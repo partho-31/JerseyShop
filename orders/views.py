@@ -29,6 +29,14 @@ class CartViewSet(CreateModelMixin,
     def perform_create(self, serializer):
         serializer.save(user = self.request.user)
 
+    def create(self, request, *args, **kwargs):
+        try:    
+            existing_cart = Cart.objects.get(user = self.request.user)
+            serializer = self.get_serializer(existing_cart)
+            return Response(serializer.data,status= status.HTTP_200_OK)
+        except Cart.DoesNotExist:
+            return super().create(request, *args, **kwargs)
+
 
 
 class CartItemViewSet(ModelViewSet):

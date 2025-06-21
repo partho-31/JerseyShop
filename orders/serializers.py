@@ -7,13 +7,17 @@ from users.serializers import CustomUserSerializers
 
 class CartSerializers(serializers.ModelSerializer):
     total_amount = serializers.SerializerMethodField(method_name='get_total')
+    total_items = serializers.SerializerMethodField(method_name='get_total_items')
     class Meta:
         model = Cart
-        fields = ['id','user','total_amount','created_at']
-        read_only_fields = ['id','created_at','total_amount','user']
+        fields = ['id','user','total_amount','created_at','total_items']
+        read_only_fields = ['id','created_at','total_amount','user','total_items']
 
     def get_total(self,obj):
         return sum([item.product.price*item.quantity for item in obj.cartItem.all()])
+    
+    def get_total_items(self,obj):
+        return obj.cartItem.count()
 
 
 class CartItemSerializers(serializers.ModelSerializer):
