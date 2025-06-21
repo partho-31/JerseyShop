@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'rest_framework',
     'djoser',
+    'django_filters',
     "corsheaders",
     'api',
     'products',
@@ -152,6 +153,7 @@ AUTH_USER_MODEL = 'users.CustomUser'
 
 
 REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
@@ -164,15 +166,19 @@ CORS_ALLOWED_ORIGINS = [
 
 
 DJOSER = {
-    'PASSWORD_RESET_CONFIRM_URL': '/password/reset/confirm/{uid}/{token}',
-    'USERNAME_RESET_CONFIRM_URL': '/username/reset/confirm/{uid}/{token}',
+    'EMAIL_FRONTEND_PROTOCOL' : config('EMAIL_FRONTEND_PROTOCOL'),
+    'EMAIL_FRONTEND_DOMAIN' : config('EMAIL_FRONTEND_DOMAIN'),
     'USERNAME_FIELD': 'email',
-    'ACTIVATION_URL': '/activate/{uid}/{token}',
     'SEND_ACTIVATION_EMAIL': True,
+    'ACTIVATION_URL': '/activate/{uid}/{token}',
+    'PASSWORD_RESET_CONFIRM_URL': '/password/reset/confirm/{uid}/{token}',
     'SERIALIZERS': {
         'user_create': 'users.serializers.CustomUserCreateSerializers',
         'current_user': 'users.serializers.CustomUserSerializers',
         'user': 'users.serializers.CustomUserSerializers',
+        'activation': 'djoser.serializers.ActivationSerializer',
+        'password_reset': 'djoser.serializers.SendEmailResetSerializer',
+        'password_reset_confirm': 'djoser.serializers.PasswordResetConfirmSerializer',
     },
     "USER_VIEWSET": "users.views.CustomUserViewSet",
 }

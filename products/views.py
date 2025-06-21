@@ -4,6 +4,9 @@ from products.serializers import ProductSerializers,CategorySerializers,ProductI
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from api.permissions import IsReviewAuthorOrReadOnly
+from rest_framework.filters import SearchFilter
+from django_filters.rest_framework import DjangoFilterBackend
+
 
 class CategoryViewSet(ModelViewSet):
     serializer_class = CategorySerializers
@@ -13,6 +16,10 @@ class CategoryViewSet(ModelViewSet):
 class ProductViewSet(ModelViewSet):
     queryset = Product.objects.prefetch_related('images').select_related('category').prefetch_related('reviews').all()
     serializer_class = ProductSerializers
+    filter_backends = [SearchFilter,DjangoFilterBackend]
+    search_fields = ['name']
+    filterset_fields = ['category']
+
 
 
 class ProductImageViewSet(ModelViewSet):
