@@ -1,8 +1,7 @@
-from django.shortcuts import render
-from rest_framework.mixins import CreateModelMixin,DestroyModelMixin,RetrieveModelMixin,UpdateModelMixin
+from rest_framework.mixins import CreateModelMixin,DestroyModelMixin,RetrieveModelMixin,UpdateModelMixin,ListModelMixin
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.viewsets import ModelViewSet
-from orders.serializers import CartSerializers,CartItemSerializers,addCartItemSerializers,CreateOrderSerializers,OrderSerializers,UpdateOrderSerializers,OrderItemSerializers
+from orders.serializers import CartSerializers,CartItemSerializers,addCartItemSerializers,OrderSerializers,UpdateOrderSerializers,OrderItemSerializers
 from orders.models import Cart,CartItem,Order,OrderItem
 from rest_framework.decorators import action,api_view
 from rest_framework.response import Response
@@ -60,7 +59,11 @@ class CartItemViewSet(ModelViewSet):
 
 
 
-class OrderViewSet(ModelViewSet):
+class OrderViewSet(ListModelMixin,
+                  RetrieveModelMixin,
+                  UpdateModelMixin,
+                  DestroyModelMixin,
+                  GenericViewSet):
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
@@ -69,15 +72,10 @@ class OrderViewSet(ModelViewSet):
         return Order.objects.filter(user= self.request.user).order_by('-created_at')
 
     def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return CreateOrderSerializers
-        elif self.request.method in ['PUT', 'PATCH']:
+        if self.request.method in ['PUT', 'PATCH']:
             return UpdateOrderSerializers
         return OrderSerializers
 
-    def perform_create(self, serializer):
-        user = self.request.user
-        serializer.save(user=user)
 
     @action(detail=True, methods=['post'])
     def cancel(self, request, pk=None):

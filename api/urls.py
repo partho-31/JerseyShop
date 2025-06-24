@@ -3,7 +3,7 @@ from rest_framework_nested import routers
 
 from products.views import ProductViewSet,CategoryViewSet,ProductImageViewSet,ProductReviewViewSet,LatestProduct
 from orders.views import CartViewSet,CartItemViewSet,OrderViewSet,OrderItemViewSet,OrderOverview
-from users.views import PaymentInitiate,PaymentSuccess,PaymentCancel,PaymentFailed
+from users.views import PaymentInitiate,PaymentSuccess,PaymentCancel,PaymentFailed,SalesReport
 
 router = routers.SimpleRouter()
 router.register('products',ProductViewSet, basename='product')
@@ -35,4 +35,5 @@ urlpatterns = [
     path('payment/success/',PaymentSuccess, name='payment-success'),
     path('payment/cancel/',PaymentCancel, name='payment-cancel'),
     path('payment/failed/',PaymentFailed, name='payment-failed'),
+    path('sales/report/',SalesReport, name="sales-report"),
 ]

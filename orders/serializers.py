@@ -63,32 +63,30 @@ class OrderSerializers(serializers.ModelSerializer):
         return sum([item.product.price*item.quantity for item in obj.orderItem.all()])
 
 
-           
 class CreateOrderSerializers(serializers.Serializer):
-    class Meta:
-        model = Order
-        fields =  ['user']
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)  
+        super().__init__(*args, **kwargs)
 
     def create(self, validated_data):
-        user = validated_data.get('user')
+        user = self.user  
         try:
             cart = user.cart
         except Cart.DoesNotExist:
             raise serializers.ValidationError("Cart does not exist.")
-        
+
         order = Order.objects.create(user=user)
-        orderItem = [ OrderItem(
-                order=order,
-                product=item.product,
-                quantity=item.quantity
-        )
-        for item in cart.cartItem.all()]
-        OrderItem.objects.bulk_create(orderItem)
+        order_items = [
+            OrderItem(order=order, product=item.product, quantity=item.quantity)
+            for item in cart.cartItem.all()
+        ]
+        OrderItem.objects.bulk_create(order_items)
         cart.delete()
         return order
 
     def to_representation(self, instance):
         return OrderSerializers(instance).data
+
 
 
 class UpdateOrderSerializers(serializers.ModelSerializer):

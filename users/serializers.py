@@ -1,5 +1,6 @@
 from djoser.serializers import UserCreateSerializer,UserSerializer
 from rest_framework import serializers
+from .models import PaymentHistory
 
 
 class CustomUserCreateSerializers(UserCreateSerializer):
@@ -12,6 +13,4 @@ class CustomUserSerializers(UserSerializer):
     class Meta(UserSerializer.Meta):
         fields = '__all__'
         read_only_fields = ['password']
-
-
 

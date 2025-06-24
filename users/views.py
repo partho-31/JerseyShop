@@ -1,13 +1,17 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view,permission_classes
+from rest_framework.permissions import IsAdminUser
 from django.http import HttpResponseRedirect 
 from rest_framework.response import Response
 from django.conf import settings as main_settings 
 from sslcommerz_lib import SSLCOMMERZ
+from django.db.models import Q,Sum
+from django.utils import timezone
+from datetime import timedelta
+import uuid
 from djoser.views import UserViewSet
-from users.models import CustomUser
+from users.models import CustomUser,PaymentHistory
 from orders.models import Order
 from orders.serializers import CreateOrderSerializers
-import uuid
 
 
 
@@ -28,7 +32,7 @@ def PaymentInitiate(request):
     post_body['total_amount'] = amount
     post_body['currency'] = "BDT"
     post_body['tran_id'] = f'tnx_id:{uuid.uuid4().hex}'
-    post_body['success_url'] = f'{main_settings.BACKEND_URL}/api/payment/success/'
+    post_body['success_url'] = f'http://127.0.0.1:8000/api/payment/success/'
     post_body['fail_url'] = f'{main_settings.BACKEND_URL}/api/payment/failed/'
     post_body['cancel_url'] = f'{main_settings.BACKEND_URL}/api/payment/cancel/'
     post_body['emi_option'] = 0
@@ -48,24 +52,26 @@ def PaymentInitiate(request):
 
     response = sslcz.createSession(post_body)
 
-   
-
-    if response.get('status') == 'SUCCESS':
+    if response.get('status') == 'SUCCESS':       
+        PaymentHistory.objects.create(
+            amount = post_body['total_amount'],
+            tnx_id = post_body['tran_id'],
+            user= user
+        )
         return Response({'payment_url' : response.get('GatewayPageURL')})
     else:  
         return Response({'request' : 'Request failed!','response': response})
 
 
-@api_view(['POST',])
+@api_view(['POST'])
 def PaymentSuccess(request): 
-    serializer = CreateOrderSerializers(data={'user': request.user})
-    serializer.is_valid(raise_exception=True) 
+    user = request.user
+    serializer = CreateOrderSerializers(data={}, user=user)
+    serializer.is_valid(raise_exception=True)
     order = serializer.save()
-    print(order)
     order.status = Order.PAID
     order.save()
-    print(order)
-    return HttpResponseRedirect(f'{main_settings.FRONTEND_URL}/payment/success/')  
+    return HttpResponseRedirect(f'{main_settings.FRONTEND_URL}/payment/success/')
 
 
 @api_view(['POST',])
@@ -76,3 +82,15 @@ def PaymentCancel(request):
 @api_view(['POST',])
 def PaymentFailed(request):
     return HttpResponseRedirect(f'{main_settings.FRONTEND_URL}/payment/failed/')
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def SalesReport(request):
+    seven_days_ago = timezone.now() - timedelta(days=7)
+    queryset = PaymentHistory.objects.aggregate(
+            total_sales=Sum('amount'),
+            weekly_sales=Sum('amount', filter=Q(created_at__gte=seven_days_ago))
+        )
+    return Response({'Sales_data' : queryset})
+ 

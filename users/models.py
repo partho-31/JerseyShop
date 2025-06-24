@@ -1,7 +1,9 @@
 from django.db import models
+from django.core.validators import MinValueValidator
 from django.contrib.auth.models import AbstractUser
 from users.managers import CustomManagerUser
 from cloudinary.models import CloudinaryField
+
 
 
 class CustomUser(AbstractUser):
@@ -31,3 +33,13 @@ class Contact(models.Model):
     def __str__(self):
         return self.email
     
+
+class PaymentHistory(models.Model):
+    amount = models.DecimalField(max_digits=10, decimal_places=2,validators=[MinValueValidator(0)])
+    tnx_id = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    user = models.ForeignKey(CustomUser,on_delete=models.CASCADE,related_name="payment")
+
+    def __str__(self):
+        return self.tnx_id
