@@ -173,8 +173,8 @@ DJOSER = {
     'EMAIL_FRONTEND_DOMAIN' : config('EMAIL_FRONTEND_DOMAIN'),
     'USERNAME_FIELD': 'email',
     'SEND_ACTIVATION_EMAIL': True,
-    'ACTIVATION_URL': '/activate/{uid}/{token}',
-    'PASSWORD_RESET_CONFIRM_URL': '/password/reset/confirm/{uid}/{token}',
+    'ACTIVATION_URL': 'activate/{uid}/{token}',
+    'PASSWORD_RESET_CONFIRM_URL': 'password/reset/confirm/{uid}/{token}',
     'SERIALIZERS': {
         'user_create': 'users.serializers.CustomUserCreateSerializers',
         'current_user': 'users.serializers.CustomUserSerializers',

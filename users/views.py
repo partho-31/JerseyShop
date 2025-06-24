@@ -32,7 +32,7 @@ def PaymentInitiate(request):
     post_body['total_amount'] = amount
     post_body['currency'] = "BDT"
     post_body['tran_id'] = f'tnx_id:{uuid.uuid4().hex}'
-    post_body['success_url'] = f'http://127.0.0.1:8000/api/payment/success/'
+    post_body['success_url'] = f'{main_settings.BACKEND_URL}/api/payment/success/'
     post_body['fail_url'] = f'{main_settings.BACKEND_URL}/api/payment/failed/'
     post_body['cancel_url'] = f'{main_settings.BACKEND_URL}/api/payment/cancel/'
     post_body['emi_option'] = 0
