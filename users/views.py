@@ -65,7 +65,9 @@ def PaymentInitiate(request):
 
 @api_view(['POST'])
 def PaymentSuccess(request): 
-    user = request.user
+    tnx_id = request.POST.get('tran_id')
+    payment = PaymentHistory.objects.get(tnx_id=tnx_id)
+    user = payment.user
     serializer = CreateOrderSerializers(data={}, user=user)
     serializer.is_valid(raise_exception=True)
     order = serializer.save()
