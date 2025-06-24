@@ -67,10 +67,11 @@ class OrderViewSet(ListModelMixin,
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
+        base_queryset = Order.objects.prefetch_related('orderItem').select_related('user').order_by('-created_at')
         if self.request.user.is_staff:
-            return  Order.objects.select_related('user').order_by('-created_at')    
-        return Order.objects.filter(user= self.request.user).order_by('-created_at')
-
+            return base_queryset
+        return base_queryset.filter(user=self.request.user)
+    
     def get_serializer_class(self):
         if self.request.method in ['PUT', 'PATCH']:
             return UpdateOrderSerializers
