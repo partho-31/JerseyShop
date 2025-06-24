@@ -51,16 +51,6 @@ class addCartItemSerializers(serializers.ModelSerializer):
         return cartItem
  
 
-class OrderSerializers(serializers.ModelSerializer):
-    user = CustomUserSerializers()
-    total_amount = serializers.SerializerMethodField(method_name='get_total')
-    class Meta:
-        model = Order
-        fields = ['id','status','created_at','user','total_amount']
-        read_only_fields = ['id','status','total_amount','created_at','user']
-
-    def get_total(self,obj):
-        return sum([item.product.price*item.quantity for item in obj.orderItem.all()])
 
 
 class CreateOrderSerializers(serializers.Serializer):
@@ -106,6 +96,18 @@ class OrderItemSerializers(serializers.ModelSerializer):
     def get_total_cost(self,obj):
         return obj.product.price * obj.quantity
     
+
+class OrderSerializers(serializers.ModelSerializer):
+    user = CustomUserSerializers()
+    orderItem = OrderItemSerializers(many= True,read_only=True)
+    total_amount = serializers.SerializerMethodField(method_name='get_total')
+    class Meta:
+        model = Order
+        fields = ['id','status','created_at','user','orderItem','total_amount']
+        read_only_fields = ['id','status','total_amount','created_at','user','orderItem']
+
+    def get_total(self,obj):
+        return sum([item.product.price*item.quantity for item in obj.orderItem.all()])
 
 
    
