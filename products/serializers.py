@@ -27,7 +27,7 @@ class ImageSerializers(serializers.ModelSerializer):
 
 class ProductReviewSerializers(serializers.ModelSerializer):
     user = CustomUserSerializers(read_only=True)
-    image = serializers.ImageField()
+    image = serializers.ImageField(required=False, allow_null=True)
     class Meta:
         model = ProductReview
         fields = ['id','rating','comment','user','image']
