@@ -1,9 +1,10 @@
 from rest_framework.viewsets import ModelViewSet
 from products.models import Category,Product,ProductImage,ProductReview
-from products.serializers import ProductSerializers,CategorySerializers,ProductImageSerializers,ProductReviewSerializers
+from products.serializers import CreateProductSerializers,ProductSerializers,CategorySerializers,ProductImageSerializers,ProductReviewSerializers
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from api.permissions import IsReviewAuthorOrReadOnly
+from rest_framework.permissions import IsAdminUser
 from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -15,10 +16,15 @@ class CategoryViewSet(ModelViewSet):
 
 class ProductViewSet(ModelViewSet):
     queryset = Product.objects.prefetch_related('images').select_related('category').prefetch_related('reviews').all()
-    serializer_class = ProductSerializers
     filter_backends = [SearchFilter,DjangoFilterBackend]
     search_fields = ['name']
     filterset_fields = ['category']
+    permission_classes = [IsAdminUser]
+
+    def get_serializer_class(self):
+        if self.request.method in ['POST','PUT', 'PATCH']:
+            return CreateProductSerializers
+        return ProductSerializers
 
 
 

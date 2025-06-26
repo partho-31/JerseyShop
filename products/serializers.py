@@ -39,6 +39,17 @@ class ProductReviewSerializers(serializers.ModelSerializer):
         return ProductReview.objects.create(product=product,**validated_data)
 
 
+class CreateProductSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ['name','price','discount','stock','category','description']
+        
+    def validate_price(self,price):
+        if price <= 0:
+            raise serializers.ValidationError('Price must be greater than 0')
+        return price
+    
+
 class ProductSerializers(serializers.ModelSerializer):
     images = ImageSerializers(many=True, read_only=True)
     final_price = serializers.SerializerMethodField('get_final_price')
@@ -50,11 +61,6 @@ class ProductSerializers(serializers.ModelSerializer):
         model = Product
         fields = ['id','name','price','discount','stock','category','description','images','final_price','ratings','reviews','created_at']
         read_only_fields = ['id','final_price','ratings','reviews','created_at']
-
-    def validate_price(self,price):
-        if price <= 0:
-            raise serializers.ValidationError('Price must be greater than 0')
-        return price
 
     def get_final_price(self,obj):
         return obj.price - (obj.price*( Decimal(obj.discount)/100))
