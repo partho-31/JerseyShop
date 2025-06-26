@@ -8,9 +8,10 @@ from decimal import Decimal
 
 class CategorySerializers(serializers.ModelSerializer):
     total_product = serializers.SerializerMethodField('get_total_product')
+    image = serializers.ImageField()
     class Meta:
         model = Category
-        fields = ['id','name','total_product','description']
+        fields = ['id','name','total_product','description','image']
         read_only_fields = ['id','total_product']
 
     def get_total_product(self,obj):
@@ -56,11 +57,12 @@ class ProductSerializers(serializers.ModelSerializer):
     ratings = serializers.SerializerMethodField('get_ratings')
     category = CategorySerializers()
     reviews = ProductReviewSerializers(many=True, read_only=True)
+    remaining = serializers.SerializerMethodField('get_remaining')
 
     class Meta:
         model = Product
-        fields = ['id','name','price','discount','stock','category','description','images','final_price','ratings','reviews','created_at']
-        read_only_fields = ['id','final_price','ratings','reviews','created_at']
+        fields = ['id','name','price','discount','stock','category','description','images','final_price','ratings','reviews','created_at','remaining']
+        read_only_fields = ['id','final_price','ratings','reviews','created_at','remaining']
 
     def get_final_price(self,obj):
         return obj.price - (obj.price*( Decimal(obj.discount)/100))
@@ -69,7 +71,11 @@ class ProductSerializers(serializers.ModelSerializer):
         result = obj.reviews.aggregate(avg_rating=Avg('rating'))
         average = result['avg_rating']
         return round(average) if average is not None else 0
-        
+    
+    def get_remaining(self,obj):
+        quantity =sum([orderItem.quantity for orderItem in obj.order.all()])
+        return obj.stock - quantity
+    
 
 class ProductImageSerializers(serializers.ModelSerializer):
     image = serializers.ImageField()

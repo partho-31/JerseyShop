@@ -67,6 +67,8 @@ class OrderViewSet(ListModelMixin,
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Order.objects.none()
         base_queryset = Order.objects.prefetch_related('orderItem').select_related('user').order_by('-created_at')
         if self.request.user.is_staff:
             return base_queryset

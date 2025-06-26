@@ -9,6 +9,7 @@ from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
 
 
+
 class CategoryViewSet(ModelViewSet):
     serializer_class = CategorySerializers
     queryset = Category.objects.prefetch_related('product').all()
@@ -19,7 +20,6 @@ class ProductViewSet(ModelViewSet):
     filter_backends = [SearchFilter,DjangoFilterBackend]
     search_fields = ['name']
     filterset_fields = ['category']
-    permission_classes = [IsAdminUser]
 
     def get_serializer_class(self):
         if self.request.method in ['POST','PUT', 'PATCH']:

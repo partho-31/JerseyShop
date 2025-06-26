@@ -8,6 +8,8 @@ class Category(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
     total_product = models.PositiveIntegerField(validators=[MinValueValidator(0)], blank=True, null=True)
+    image = CloudinaryField('image')
+
 
     def __str__(self):
         return self.name
