@@ -81,7 +81,7 @@ class ProductImageSerializers(serializers.ModelSerializer):
     image = serializers.ImageField()
     class Meta:
         model = ProductImage
-        fields = ['product','image']
+        fields = ['image']
 
 
 

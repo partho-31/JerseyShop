@@ -5,8 +5,9 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from api.permissions import IsReviewAuthorOrReadOnly
 from rest_framework.permissions import IsAdminUser
-from rest_framework.filters import SearchFilter
+from rest_framework.filters import SearchFilter,OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
+from products.filters import ProductFilter
 
 
 
@@ -17,9 +18,10 @@ class CategoryViewSet(ModelViewSet):
 
 class ProductViewSet(ModelViewSet):
     queryset = Product.objects.prefetch_related('images').select_related('category').prefetch_related('reviews').all()
-    filter_backends = [SearchFilter,DjangoFilterBackend]
+    filter_backends = [SearchFilter,OrderingFilter,DjangoFilterBackend]
     search_fields = ['name']
-    filterset_fields = ['category']
+    filterset_class = ProductFilter
+    ordering_fields = ['price', 'created_at','discount']
 
     def get_serializer_class(self):
         if self.request.method in ['POST','PUT', 'PATCH']:
