@@ -44,11 +44,38 @@ INSTALLED_APPS = [
     'djoser',
     'django_filters',
     "corsheaders",
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'rest_framework.authtoken',
     'api',
     'products',
     'users',
     'orders',
 ]
+
+SITE_ID = 1
+
+REST_USE_JWT = True
+
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': config('Client_ID'),
+            'secret': config('Client_Secret'),
+            'key': ''
+        }
+    }
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -60,6 +87,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = 'JerseyShop.urls'
@@ -162,11 +190,19 @@ REST_FRAMEWORK = {
     ),
 }
 
+
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'https://jershop-client.vercel.app',
 ]
 
+LOGIN_REDIRECT_URL = "https://jershop-client.vercel.app/"
 
 DJOSER = {
     'EMAIL_FRONTEND_PROTOCOL' : config('EMAIL_FRONTEND_PROTOCOL'),
@@ -181,7 +217,7 @@ DJOSER = {
         'user': 'users.serializers.CustomUserSerializers',
         'activation': 'djoser.serializers.ActivationSerializer',
         'password_reset': 'djoser.serializers.SendEmailResetSerializer',
-        'password_reset_confirm': 'djoser.serializers.PasswordResetConfirmSerializer',
+        'password_reset_confirm': 'users.serializers.CustomPasswordResetConfirmSerializer',
     },
     "USER_VIEWSET": "users.views.CustomUserViewSet",
 }
