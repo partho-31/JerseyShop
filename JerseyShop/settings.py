@@ -202,7 +202,6 @@ CORS_ALLOWED_ORIGINS = [
     'https://jershop-client.vercel.app',
 ]
 
-LOGIN_REDIRECT_URL = "https://jershop-client.vercel.app/"
 
 DJOSER = {
     'EMAIL_FRONTEND_PROTOCOL' : config('EMAIL_FRONTEND_PROTOCOL'),
