@@ -179,7 +179,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 FRONTEND_URL=config('FRONTEND_URL')
 BACKEND_URL=config('BACKEND_URL')
-
+LOGIN_REDIRECT_URL = 'https://jershop-client.vercel.app/'
 AUTH_USER_MODEL = 'users.CustomUser'
 
 
@@ -256,3 +256,5 @@ EMAIL_USE_TLS = config('EMAIL_USE_TLS',cast= bool)
 EMAIL_PORT = config('EMAIL_PORT')
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+
+
