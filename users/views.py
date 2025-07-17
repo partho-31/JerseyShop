@@ -12,7 +12,13 @@ from djoser.views import UserViewSet
 from users.models import CustomUser,PaymentHistory
 from orders.models import Order
 from orders.serializers import CreateOrderSerializers
+from dj_rest_auth.registration.views import SocialLoginView # type: ignore
+from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter # type: ignore
 
+
+
+class GoogleLoginViewSet(SocialLoginView):
+    adapter_class = GoogleOAuth2Adapter
 
 
 class CustomUserViewSet(UserViewSet):
