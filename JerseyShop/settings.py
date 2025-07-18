@@ -41,41 +41,24 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'drf_yasg',
     'rest_framework',
+    'rest_framework.authtoken',
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
     'djoser',
     'django_filters',
     "corsheaders",
-    'django.contrib.sites',
-    'allauth',
-    'allauth.account',
-    'dj_rest_auth',
-    'dj_rest_auth.registration',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
-    'rest_framework.authtoken',
     'api',
     'products',
     'users',
     'orders',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+   
 ]
 
-SITE_ID = 1
-
-REST_USE_JWT = True
-
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-
-SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'APP': {
-            'client_id': config('Client_ID'),
-            'secret': config('Client_Secret'),
-            'key': ''
-        }
-    }
-}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -192,10 +175,6 @@ REST_FRAMEWORK = {
 
 
 
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
-]
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
@@ -216,7 +195,7 @@ DJOSER = {
         'user': 'users.serializers.CustomUserSerializers',
         'activation': 'djoser.serializers.ActivationSerializer',
         'password_reset': 'djoser.serializers.SendEmailResetSerializer',
-        'password_reset_confirm': 'users.serializers.CustomPasswordResetConfirmSerializer',
+        'password_reset_confirm': 'djoser.serializers.PasswordResetConfirmSerializer',
     },
     "USER_VIEWSET": "users.views.CustomUserViewSet",
 }
@@ -257,4 +236,37 @@ EMAIL_PORT = config('EMAIL_PORT')
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 
+SITE_ID = 1
+LOGIN_REDIRECT_URL = "https://jershop-client.vercel.app"
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+SOCIALACCOUNT_PROVIDERS = {
+    "google": { 
+        "APP": { 
+            "client_id": config('Client_ID'),
+            "secret": config('Client_Secret'),
+            "key": ""
+        },
+        "SCOPE": [
+            "profile",
+            "email"
+        ],
+        "AUTH_PARAMS": {
+            "access_type": "online"
+        }
+    }
+}
+
+REST_USE_JWT = True
+
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+
+SOCIALACCOUNT_ADAPTER = 'users.adapter.CustomSocialAccountAdapter'
 

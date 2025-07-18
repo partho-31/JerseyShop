@@ -19,7 +19,8 @@ from django.urls import path,include
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-from users.views import GoogleLoginViewSet
+from users.views import GoogleLoginView
+
 
 schema_view = get_schema_view(
    openapi.Info(
@@ -39,10 +40,12 @@ urlpatterns = [
     path('api/',include("api.urls")),
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.jwt')),
-    path('rest-auth/', include('dj_rest_auth.urls')),
-    path('rest-auth/registration/', include('dj_rest_auth.registration.urls')),
-    path('rest-auth/google/', GoogleLoginViewSet.as_view(), name='google_login'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    path('accounts/', include('allauth.urls')),
+    path('auth/social/', include('allauth.socialaccount.urls')),
+    path('auth/google/', GoogleLoginView.as_view(), name='google_login'),
 
 ]
+
+
