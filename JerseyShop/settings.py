@@ -162,7 +162,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 FRONTEND_URL=config('FRONTEND_URL')
 BACKEND_URL=config('BACKEND_URL')
-LOGIN_REDIRECT_URL = 'https://jershop-client.vercel.app/'
+LOGIN_REDIRECT_URL = 'https://golazo31.vercel.app/'
 AUTH_USER_MODEL = 'users.CustomUser'
 
 
@@ -178,7 +178,8 @@ REST_FRAMEWORK = {
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
-    'https://jershop-client.vercel.app',
+    'http://localhost:3000',
+    'https://golazo31.vercel.app',
 ]
 
 
@@ -237,7 +238,6 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 
 SITE_ID = 1
-LOGIN_REDIRECT_URL = "https://jershop-client.vercel.app"
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
