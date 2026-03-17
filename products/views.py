@@ -8,16 +8,18 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.filters import SearchFilter,OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from products.filters import ProductFilter
+from django.db.models import Avg,Sum
 
 
 
 class CategoryViewSet(ModelViewSet):
     serializer_class = CategorySerializers
     queryset = Category.objects.prefetch_related('product').all()
-    
 
+    
+    
 class ProductViewSet(ModelViewSet):
-    queryset = Product.objects.prefetch_related('images').select_related('category').prefetch_related('reviews').all()
+    queryset = Product.objects.prefetch_related('images').select_related('category').annotate(avg_rating=Avg('reviews__rating'),ordered_quantity=Sum("order__quantity")).all()
     filter_backends = [SearchFilter,OrderingFilter,DjangoFilterBackend]
     search_fields = ['name']
     filterset_class = ProductFilter
@@ -39,13 +41,13 @@ class ProductImageViewSet(ModelViewSet):
             return ProductImage.objects.none()
         
         product_id = self.kwargs.get('product_pk')
-        product = Product.objects.get(id=product_id)
-        return  ProductImage.objects.filter(product= product)
+        # product = Product.objects.get(id=product_id)
+        return  ProductImage.objects.filter(product_id= product_id)
     
     def perform_create(self, serializer):
         product_id = self.kwargs.get('product_pk')
-        product = Product.objects.get(id=product_id)
-        serializer.save(product=product)
+        # product = Product.objects.get(id=product_id)
+        serializer.save(product_id=product_id)
 
 
 class ProductReviewViewSet(ModelViewSet):
@@ -57,8 +59,7 @@ class ProductReviewViewSet(ModelViewSet):
             return ProductReview.objects.none()
         
         product_id = self.kwargs.get('product_pk')
-        product = Product.objects.get(id=product_id)
-        return ProductReview.objects.filter(product=product).select_related('user').all()
+        return ProductReview.objects.filter(product_id=product_id).select_related('user').all()
 
     def perform_create(self, serializer):
         user = self.request.user

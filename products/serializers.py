@@ -3,6 +3,7 @@ from products.models import Product,ProductImage,Category,ProductReview
 from users.serializers import CustomUserSerializers
 from django.db.models import Avg
 from decimal import Decimal
+from users.models import CustomUser
 
 
 
@@ -26,8 +27,14 @@ class ImageSerializers(serializers.ModelSerializer):
         read_only_fields = ['id']
 
 
+class ReviewUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ["first_name", "last_name", "image"]
+
+
 class ProductReviewSerializers(serializers.ModelSerializer):
-    user = CustomUserSerializers(read_only=True)
+    user = ReviewUserSerializer()
     image = serializers.ImageField(required=False, allow_null=True)
     class Meta:
         model = ProductReview
@@ -36,8 +43,8 @@ class ProductReviewSerializers(serializers.ModelSerializer):
 
     def create(self, validated_data):
         id = self.context.get('product_id')
-        product = Product.objects.get(id=id)
-        return ProductReview.objects.create(product=product,**validated_data)
+        # product = Product.objects.get(id=id)
+        return ProductReview.objects.create(product_id=id,**validated_data)
 
 
 class CreateProductSerializers(serializers.ModelSerializer):
@@ -53,28 +60,26 @@ class CreateProductSerializers(serializers.ModelSerializer):
 
 class ProductSerializers(serializers.ModelSerializer):
     images = ImageSerializers(many=True, read_only=True)
-    final_price = serializers.SerializerMethodField('get_final_price')
-    ratings = serializers.SerializerMethodField('get_ratings')
-    category = CategorySerializers()
-    reviews = ProductReviewSerializers(many=True, read_only=True)
-    remaining = serializers.SerializerMethodField('get_remaining')
+    final_price = serializers.SerializerMethodField()
+    ratings = serializers.SerializerMethodField()
+    category = serializers.SerializerMethodField()
+    remaining = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
-        fields = ['id','name','price','discount','stock','category','description','images','final_price','ratings','reviews','created_at','remaining']
-        read_only_fields = ['id','final_price','ratings','reviews','created_at','remaining']
+        fields = ['id','name','price','discount','stock','description','created_at','category','ratings','final_price','remaining','images']
+
+    def get_category(self,obj):
+        return obj.category.name
 
     def get_final_price(self,obj):
         return obj.price - (obj.price*( Decimal(obj.discount)/100))
 
     def get_ratings(self,obj):
-        result = obj.reviews.aggregate(avg_rating=Avg('rating'))
-        average = result['avg_rating']
-        return round(average) if average is not None else 0
+        return obj.avg_rating
     
     def get_remaining(self,obj):
-        quantity =sum([orderItem.quantity for orderItem in obj.order.all()])
-        return obj.stock - quantity
+        return obj.stock - (obj.ordered_quantity or 0)
     
 
 class ProductImageSerializers(serializers.ModelSerializer):
